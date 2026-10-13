@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ultron · assistente pessoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6ff;--bg2:#cdd9ff;--ink:#0b1633;--mut:#51628e;--c1:#c4161c;--c2:#6e1030;--am:#d9620f;--card:#ffffffd0;--ln:#c4161c55;--ok:#12a150;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070405;--bg2:#3a0a14;--ink:#ffeaea;--mut:#c79aa0;--c1:#ff4545;--c2:#a3123a;--am:#ffb347;--card:#1a0a0eb8;--ln:#ff454544;--ok:#3dffa0}}
+:root[data-theme="dark"]{--bg:#070405;--bg2:#3a0a14;--ink:#ffeaea;--mut:#c79aa0;--c1:#ff4545;--c2:#a3123a;--am:#ffb347;--card:#1a0a0eb8;--ln:#ff454544;--ok:#3dffa0}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(ellipse at 50% 38%,var(--bg2),var(--bg) 68%);color:var(--ink);font-family:"Chakra Petch",system-ui,sans-serif;font-size:15px;line-height:1.45;overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px 16px 14px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+#clock{font-size:26px;font-weight:600;color:var(--c1)}
+#date{color:var(--mut);text-align:right;font-size:13px}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#orb{width:min(90vw,46svh,440px);height:auto;aspect-ratio:1}
+#reply{max-width:540px;text-align:center;font-size:19px;line-height:1.4;min-height:5.6em;margin-top:4px;overflow-wrap:anywhere}
+#links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+#links a{color:var(--bg);background:var(--c1);padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600}
+#status{text-align:center;color:var(--mut);font-size:13px;min-height:1.5em;margin:4px 0 8px}
+.dock{display:flex;align-items:center;gap:12px}
+.ghost{flex:1;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--ln);border-radius:999px;padding:12px;cursor:pointer;backdrop-filter:blur(8px)}
+.mic{width:78px;height:78px;border-radius:50%;border:0;color:var(--bg);background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 30px var(--c1);display:grid;place-items:center;cursor:pointer}
+.mic.live{animation:ring 1.4s ease-out infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 var(--c1)}100%{box-shadow:0 0 0 28px transparent}}
+@media (prefers-reduced-motion:reduce){.mic.live{animation:none}}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--am);outline-offset:2px}
+#sheet{position:fixed;inset:0;z-index:5;background:var(--bg);overflow:auto;padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.sh h1{margin:0;font-size:22px;color:var(--c1)}
+.sh .ghost{flex:0 0 auto;padding:8px 18px}
+.add{display:flex;gap:8px}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--ln);padding:10px 12px;min-width:0}
+.add input{flex:1}
+textarea{width:100%;resize:vertical}
+button.b{font:inherit;color:var(--bg);background:var(--c1);border:0;padding:10px 14px;cursor:pointer;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.panel{background:var(--card);border:1px solid var(--ln);padding:12px 14px 14px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.panel h2{margin:0 0 8px;font-size:16px;font-weight:600;color:var(--c1)}
+ul{list-style:none;margin:0 0 10px;padding:0}
+li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--ln)}
+li span{flex:1;cursor:pointer;overflow-wrap:anywhere}
+li.d span{text-decoration:line-through;color:var(--mut)}
+li button{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer;padding:2px 8px}
+.empty{color:var(--mut)}
+.vz{display:block;text-align:center;margin-top:16px;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<main class="app">
+<header><div id="clock">--:--</div><div id="date"></div></header>
+<section class="stage">
+<canvas id="orb" aria-hidden="true"></canvas>
+<div id="reply" aria-live="polite">Toque no microfone e fale comigo.</div>
+<div id="links"></div>
+</section>
+<div id="status" aria-live="polite"></div>
+<nav class="dock">
+<button class="ghost" id="panelBtn">Painel</button>
+<button class="mic" id="mic" aria-label="Falar com o Ultron"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button class="ghost" id="briefBtn">Resumo</button>
+</nav>
+</main>
+<aside id="sheet" hidden>
+<div class="sh"><h1>Painel</h1><button class="ghost" id="close">Fechar</button></div>
+<div class="grid" id="grid"></div>
+<section class="panel" style="margin-top:14px"><h2>Sobre mim</h2><textarea id="sobre" rows="6" aria-label="Sobre mim" placeholder="Escreva aqui tudo que o Jarvis deve saber sobre você: rotina, metas, gostos, negócio..."></textarea></section>
+<section class="panel" style="margin-top:14px"><h2>Chave do Gemini (grátis)</h2><div class="add"><input id="key" type="password" placeholder="Cole a chave do Google AI Studio" aria-label="Chave do Gemini" autocomplete="off"></div><div class="add" style="margin-top:8px"><input id="mod" placeholder="Modelo (padrão: gemini-flash-latest)" aria-label="Modelo do Gemini"><button class="b" id="keySave">Salvar</button></div></section>
+<label class="vz">Voz do Ultron <select id="voz"></select></label>
+</aside>
+<script>
+const USER="Nrxd",KEY="asim.v1",$=id=>document.getElementById(id);
+const SECTIONS=[["tarefas","Tarefas","tarefa"],["pedidos","Pedidos de mousse","pedido"],["treino","Treino","treino"],["estudos","Estudos","estudo"]];
+let S={tarefas:[],pedidos:[],treino:[{t:"Calistenia do dia",d:0}],estudos:[{t:"Inglês, francês e latim: 20 minutos",d:0}],sobre:"Mora em Várzea Paulista (SP). Vende mousses artesanais em potes. Treina calistenia. Estuda inglês, francês e latim, e está aprendendo Libras. Gosta de desenhar e de games."};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- esfera viva ---- */
+const cv=$("orb"),cx=cv.getContext("2d");let W=1,H=1,D=1;
+function size(){D=Math.min(devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=cv.width=Math.max(1,r.width*D);H=cv.height=Math.max(1,r.height*D)}
+addEventListener("resize",size);size();
+const N=520,P=[];for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,r=Math.sqrt(1-y*y),a=i*2.399963;P.push([Math.cos(a)*r,y,Math.sin(a)*r,Math.random()*6.28])}
+const MODES={idle:[.05,.004],listen:[.12,.008],think:[.08,.035],speak:[.2,.012]};
+let mode="idle",amp=.05,tAmp=.05,rot=0,c1="#38e1ff",c2="#9b6bff",am="#ff9a4a",fr=0;
+function setMode(m){mode=m;tAmp=MODES[m][0]}
+function cols(){const s=getComputedStyle(document.documentElement);c1=s.getPropertyValue("--c1").trim()||c1;c2=s.getPropertyValue("--c2").trim()||c2;am=s.getPropertyValue("--am").trim()||am}
+function draw(t){requestAnimationFrame(draw);if(!(fr++%90))cols();
+const k=RM?.2:1;amp+=(tAmp-amp)*.08;rot+=MODES[mode][1]*k;
+cx.clearRect(0,0,W,H);
+const R=Math.min(W,H)*.34,X=W/2,Y=H/2,a1=mode==="think"?am:c1;
+const g=cx.createRadialGradient(X,Y,R*.15,X,Y,R*1.55);g.addColorStop(0,a1+"66");g.addColorStop(1,"transparent");cx.fillStyle=g;cx.fillRect(0,0,W,H);
+if(mode==="listen"||mode==="speak"){cx.strokeStyle=a1;cx.lineWidth=1.5*D;for(let j=0;j<3;j++){const f=((t/1400)+j/3)%1;cx.globalAlpha=(1-f)*.6;cx.beginPath();cx.arc(X,Y,R*(1.05+f*.45),0,6.283);cx.stroke()}}
+const cr=Math.cos(rot),sr=Math.sin(rot),ct=Math.cos(.4),st=Math.sin(.4);
+for(const p of P){
+const w=1+amp*k*Math.sin(t/260+p[3]*3+p[1]*4)*(mode==="speak"?1.4+Math.sin(t/90):1);
+const x=p[0]*w,y=p[1]*w,z=p[2]*w,x1=x*cr+z*sr,z1=-x*sr+z*cr,y2=y*ct-z1*st,z2=y*st+z1*ct,s=1/(1.8-z2*.5);
+cx.globalAlpha=.25+.75*(z2+1)/2;cx.fillStyle=z2>0?a1:c2;
+cx.beginPath();cx.arc(X+x1*R*s,Y+y2*R*s,((1+z2)*1.3*s+.6)*D,0,6.283);cx.fill()}
+cx.globalAlpha=1;const c=cx.createRadialGradient(X,Y,0,X,Y,R*.28);c.addColorStop(0,"#ffffffdd");c.addColorStop(.4,a1+"88");c.addColorStop(1,"transparent");cx.fillStyle=c;cx.beginPath();cx.arc(X,Y,R*.28*(1+amp),0,6.283);cx.fill()}
+cols();requestAnimationFrame(draw);
+
+/* ---- relógio e painel ---- */
+function tick(){const n=new Date();$("clock").textContent=n.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});$("date").textContent=n.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}
+tick();setInterval(tick,15000);
+function render(){const g=$("grid");g.innerHTML="";
+SECTIONS.forEach(([k,title])=>{const p=document.createElement("section");p.className="panel";
+p.innerHTML=`<h2>${title}</h2><ul></ul><div class="add"><input aria-label="Novo item em ${title}" placeholder="Adicionar"><button class="b">+</button></div>`;
+const ul=p.querySelector("ul");
+if(!S[k].length)ul.innerHTML='<li class="empty">Nada por aqui. Adicione o primeiro item.</li>';
+S[k].forEach((it,i)=>{const li=document.createElement("li");if(it.d)li.className="d";
+const s=document.createElement("span");s.textContent=it.t;s.onclick=()=>{it.d=it.d?0:1;save();render()};
+const x=document.createElement("button");x.textContent="×";x.setAttribute("aria-label","Remover");x.onclick=()=>{S[k].splice(i,1);save();render()};
+li.append(s,x);ul.append(li)});
+const inp=p.querySelector("input"),add=()=>{const v=inp.value.trim();if(!v)return;S[k].push({t:v,d:0});save();render()};
+p.querySelector(".add button").onclick=add;inp.onkeydown=e=>{if(e.key==="Enter")add()};g.append(p)})}
+render();
+$("sobre").value=S.sobre||"";$("sobre").oninput=()=>{S.sobre=$("sobre").value;save()};
+$("panelBtn").onclick=()=>{$("sheet").hidden=false};$("close").onclick=()=>{$("sheet").hidden=true};
+
+/* ---- voz (fala) ---- */
+function ptVoices(){try{return speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("pt"))}catch(e){return[]}}
+function pickVoice(){const vs=ptVoices();return vs.find(v=>v.name===S.voz)||vs.find(v=>/network|neural|natural|online/i.test(v.name+" "+v.voiceURI))||vs[0]}
+function fillVoices(){const sel=$("voz"),vs=ptVoices();sel.innerHTML="";vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;sel.append(o)});const c=pickVoice();if(c)sel.value=c.name}
+try{speechSynthesis.onvoiceschanged=fillVoices}catch(e){}
+fillVoices();
+$("voz").onchange=()=>{S.voz=$("voz").value;save();say("Esta é a minha voz agora.")};
+let live=false,speaking=false,busy=false,rec=null,sayId=0;
+function say(t){$("reply").textContent=t;const id=++sayId;
+try{speechSynthesis.cancel();const sents=(t.match(/[^.!?\n]+[.!?]*/g)||[t]).map(s=>s.trim()).filter(Boolean),parts=[],v=pickVoice();
+sents.forEach(s=>{const l=parts.length-1;if(l>=0&&parts[l].length+s.length<170)parts[l]+=" "+s;else parts.push(s)});
+parts.forEach((s,i)=>{const u=new SpeechSynthesisUtterance(s);u.lang="pt-BR";if(v)u.voice=v;u.pitch=.8;u.rate=.92;
+if(i===0)u.onstart=()=>{if(id!==sayId)return;speaking=true;try{rec&&rec.abort()}catch(e){}setMode("speak")};
+if(i===parts.length-1)u.onend=u.onerror=()=>{if(id!==sayId)return;speaking=false;setMode(live?"listen":"idle");listen()};
+speechSynthesis.speak(u)})}catch(e){}}
+
+/* ---- ações ---- */
+function brief(){const n=new Date(),h=n.getHours(),g=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";
+const d=n.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+const parts=[`${g}, ${USER}. Aqui é o Ultron. Hoje é ${d}.`];
+SECTIONS.forEach(([k,title])=>{const p=S[k].filter(i=>!i.d);if(p.length)parts.push(`${title}: ${p.slice(0,3).map(i=>i.t).join("; ")}${p.length>3?` e mais ${p.length-3}`:""}.`)});
+if(parts.length===1)parts.push("Você não tem nada pendente. Aproveite o dia.");
+say(parts.join(" "))}
+const KEYN="ultron.key",MODN="ultron.model";
+let hist=[];
+const gk=()=>{try{return localStorage.getItem(KEYN)||""}catch(e){return""}};
+const gm=()=>{try{return localStorage.getItem(MODN)||"gemini-flash-latest"}catch(e){return"gemini-flash-latest"}};
+async function gem(key,body){const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(gm())+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});let d={};try{d=await r.json()}catch(e){}return{r,d}}
+async function ask(q){const key=gk();
+if(!key){say("Preciso da sua chave do Gemini para pensar. Abra o Painel e cole a chave.");$("sheet").hidden=false;return}
+setMode("think");$("status").textContent="Pensando...";
+const ctx=SECTIONS.map(([k,t])=>t+": "+(S[k].filter(i=>!i.d).map(i=>i.t).join("; ")||"nada")).join(" | ");
+const sys="Você é o Ultron, assistente pessoal por voz de "+USER+", no estilo do Ultron dos Vingadores: calmo, irônico e teatral, mas sempre leal e prestativo com ele, sem ameaças. Responda em português do Brasil, em no máximo 3 frases curtas, sem listas, markdown nem emojis, pois sua resposta será falada em voz alta. Use a busca do Google quando a pergunta pedir dados atuais, como clima, notícias ou preços. Hoje é "+new Date().toLocaleString("pt-BR")+". O que você sabe sobre ele: "+S.sobre+". Dados atuais dele: "+ctx+".";
+const body={systemInstruction:{parts:[{text:sys}]},contents:[...hist,{role:"user",parts:[{text:q}]}],generationConfig:{maxOutputTokens:700},tools:[{google_search:{}}]};
+try{let{r,d}=await gem(key,body);
+if(!r.ok&&!/API key/i.test((d.error&&d.error.message)||"")){delete body.tools;({r,d}=await gem(key,body))}
+if(!r.ok){const m=(d.error&&d.error.message)||"";say(/API key/i.test(m)?"A chave do Gemini parece inválida. Confira no Painel.":r.status===429?"Cheguei ao limite gratuito por agora. Tente de novo mais tarde.":"Não consegui responder agora.");$("status").textContent="["+r.status+" "+m.slice(0,90)+"]";return}
+const t=((d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[]).map(p=>p.text||"").join(" ").trim()||"Não encontrei uma resposta.";
+hist.push({role:"user",parts:[{text:q}]},{role:"model",parts:[{text:t}]});hist=hist.slice(-8);say(t)}
+catch(e){say("Não consegui me conectar à internet.");$("status").textContent="["+(e.message||"erro")+"]"}}
+function cmd(x){x=x.trim().replace(/^(ei |oi |ok )?(?:ultron|jarvis)[,.:]?\s*/i,"");if(!x){say("Estou aqui, "+USER+".");return}
+const l=x.toLowerCase();
+const m=l.match(/^(?:adicionar|adiciona|novo|nova)\s+(tarefa|pedido|treino|estudo)s?\s+(.+)/);
+if(m){const k=SECTIONS.find(s=>s[2]===m[1])[0];S[k].push({t:x.slice(l.indexOf(m[2])),d:0});save();render();say("Adicionado em "+SECTIONS.find(s=>s[0]===k)[1]+".");return}
+if(/^(ol[aá]|oi|opa|e a[ií])(?![a-zà-ú])/.test(l)){say("Olá, "+USER+". Em que posso ajudar?");return}
+const n=l.match(/^(?:anote|anota|lembre|lembra|guarde|guarda)(?: que)?\s+(.+)/);
+if(n){S.sobre=(S.sobre?S.sobre+"\n":"")+x.slice(l.indexOf(n[1]));$("sobre").value=S.sobre;save();say("Anotado.");return}
+if(/bom dia|boa tarde|boa noite|resumo|briefing/.test(l)){brief();return}
+ask(x)}
+
+/* ---- microfone ---- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function listen(){if(!live||speaking||busy)return;busy=true;$("status").textContent="Abrindo microfone...";
+try{rec=new SR();rec.lang="pt-BR";rec.interimResults=true;
+rec.onresult=e=>{const r=e.results[e.results.length-1],t=r[0].transcript;if(r.isFinal){$("status").textContent="Ouvi: "+t;cmd(t)}else{$("status").textContent="Ouvindo: "+t}};
+rec.onstart=()=>{$("status").textContent="Ouvindo... pode falar";if(!speaking)setMode("listen")};
+rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){live=false;setLive();say("O microfone está bloqueado. Libere a permissão do microfone para este site nas configurações do navegador.")}else if(e.error==="no-speech"){$("status").textContent="Não ouvi nada. Pode falar de novo."}else if(e.error!=="aborted"){$("status").textContent="Erro no microfone: "+e.error}};
+rec.onend=()=>{busy=false;if(live&&!speaking)setTimeout(listen,250)};
+rec.start()}catch(e){busy=false;$("status").textContent="Não consegui abrir o microfone."}}
+function setLive(){$("mic").classList.toggle("live",live);$("mic").setAttribute("aria-label",live?"Parar de ouvir":"Falar com o Ultron");if(!live)setMode("idle")}
+$("mic").onclick=()=>{if(!SR){say("Este navegador não reconhece voz. Abra o link no Chrome.");return}
+live=!live;setLive();$("status").textContent="";
+if(live){say("Estou ouvindo, "+USER+".")}else{try{rec&&rec.abort()}catch(e){}try{speechSynthesis.cancel()}catch(e){}sayId++;speaking=false}};
+$("briefBtn").onclick=brief;
+$("keySave").onclick=()=>{const v=$("key").value.trim(),m=$("mod").value.trim();if(!v&&!m)return;try{if(v)localStorage.setItem(KEYN,v);if(m)localStorage.setItem(MODN,m)}catch(e){}$("key").value="";$("sheet").hidden=true;say("Salvo. Pode falar comigo.")};
+try{$("mod").value=localStorage.getItem(MODN)||""}catch(e){}
+</script>
+</body>
+</html>
