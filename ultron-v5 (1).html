@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ultron · assistente pessoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6ff;--bg2:#cdd9ff;--ink:#0b1633;--mut:#51628e;--c1:#c4161c;--c2:#6e1030;--am:#d9620f;--card:#ffffffd0;--ln:#c4161c55;--ok:#12a150;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070405;--bg2:#3a0a14;--ink:#ffeaea;--mut:#c79aa0;--c1:#ff4545;--c2:#a3123a;--am:#ffb347;--card:#1a0a0eb8;--ln:#ff454544;--ok:#3dffa0}}
+:root[data-theme="dark"]{--bg:#070405;--bg2:#3a0a14;--ink:#ffeaea;--mut:#c79aa0;--c1:#ff4545;--c2:#a3123a;--am:#ffb347;--card:#1a0a0eb8;--ln:#ff454544;--ok:#3dffa0}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(ellipse at 50% 38%,var(--bg2),var(--bg) 68%);color:var(--ink);font-family:"Chakra Petch",system-ui,sans-serif;font-size:15px;line-height:1.45;overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px 16px 14px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+#clock{font-size:26px;font-weight:600;color:var(--c1)}
+#date{color:var(--mut);text-align:right;font-size:13px}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#orb{width:min(90vw,40svh,440px);height:auto;aspect-ratio:1}
+#reply{max-width:540px;text-align:center;font-size:19px;line-height:1.4;min-height:5.6em;max-height:26svh;overflow-y:auto;margin-top:4px;overflow-wrap:anywhere}
+#links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+#links a{color:var(--bg);background:var(--c1);padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600}
+#status{text-align:center;color:var(--mut);font-size:13px;min-height:1.5em;margin:4px 0 8px}
+.dock{display:flex;align-items:center;gap:12px}
+.ghost{flex:1;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--ln);border-radius:999px;padding:12px;cursor:pointer;backdrop-filter:blur(8px)}
+.mic{width:78px;height:78px;border-radius:50%;border:0;color:var(--bg);background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 30px var(--c1);display:grid;place-items:center;cursor:pointer}
+.mic.live{animation:ring 1.4s ease-out infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 var(--c1)}100%{box-shadow:0 0 0 28px transparent}}
+@media (prefers-reduced-motion:reduce){.mic.live{animation:none}}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--am);outline-offset:2px}
+#sheet{position:fixed;inset:0;z-index:5;background:var(--bg);overflow:auto;padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.sh h1{margin:0;font-size:22px;color:var(--c1)}
+.sh .ghost{flex:0 0 auto;padding:8px 18px}
+.add{display:flex;gap:8px}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--ln);padding:10px 12px;min-width:0}
+.add input{flex:1}
+textarea{width:100%;resize:vertical}
+button.b{font:inherit;color:var(--bg);background:var(--c1);border:0;padding:10px 14px;cursor:pointer;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.panel{background:var(--card);border:1px solid var(--ln);padding:12px 14px 14px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.panel h2{margin:0 0 8px;font-size:16px;font-weight:600;color:var(--c1)}
+ul{list-style:none;margin:0 0 10px;padding:0}
+li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--ln)}
+li span{flex:1;cursor:pointer;overflow-wrap:anywhere}
+li.d span{text-decoration:line-through;color:var(--mut)}
+li button{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer;padding:2px 8px}
+.empty{color:var(--mut)}
+.vz{display:block;text-align:center;margin-top:16px;color:var(--mut);font-size:13px}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--ln) 1px,transparent 1px),linear-gradient(90deg,var(--ln) 1px,transparent 1px);background-size:44px 44px;opacity:.14;-webkit-mask-image:radial-gradient(ellipse at 50% 45%,#000 15%,transparent 72%);mask-image:radial-gradient(ellipse at 50% 45%,#000 15%,transparent 72%)}
+.app{position:relative;z-index:1}
+.stage{position:relative}
+.stage::before,.stage::after{content:"";position:absolute;width:28px;height:28px;border:2px solid var(--c1);opacity:.75;pointer-events:none;filter:drop-shadow(0 0 6px var(--c1))}
+.stage::before{top:4px;left:0;border-right:0;border-bottom:0}
+.stage::after{bottom:4px;right:0;border-left:0;border-top:0}
+#clock{text-shadow:0 0 16px var(--c1)}
+#reply{text-shadow:0 0 12px var(--c2)}
+#links a{box-shadow:0 0 14px var(--c1)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.chips button{flex:0 0 auto;font:inherit;font-size:12px;color:var(--ink);background:var(--card);border:1px solid var(--c1);border-radius:8px;padding:8px 14px;cursor:pointer;text-transform:uppercase;letter-spacing:.1em;box-shadow:0 0 12px var(--ln),inset 0 0 10px var(--ln)}
+.win{position:fixed;left:12px;right:12px;bottom:calc(172px + env(safe-area-inset-bottom,0px));max-height:42svh;max-width:696px;margin:0 auto;overflow:auto;z-index:4;background:var(--card);border:1px solid var(--c1);border-radius:10px;box-shadow:0 0 28px var(--ln);backdrop-filter:blur(12px)}
+.win .tb{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--ln);position:sticky;top:0;background:var(--bg)}
+.win .tb i{width:10px;height:10px;border-radius:50%;display:block}
+.win .tb span{flex:1;color:var(--mut);font-size:12px;margin-left:6px}
+.win .tb button{background:none;border:0;color:var(--mut);font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
+.card{display:block;padding:10px 14px;border-bottom:1px solid var(--ln);color:var(--ink);text-decoration:none}
+.card b{display:block;color:var(--c1);font-weight:600}
+.card i{font-style:normal;color:var(--am);font-size:12px}
+.card p{margin:2px 0 0;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<main class="app">
+<header><div id="clock">--:--</div><div id="date"></div></header>
+<section class="stage">
+<canvas id="orb" aria-hidden="true"></canvas>
+<div id="reply" aria-live="polite">Toque no microfone e fale comigo.</div>
+<div id="links"></div>
+</section>
+<div class="chips" id="chips"><button data-c="agenda">Agenda</button><button data-c="news">Notícias</button><button data-c="notas">Notas</button><button data-c="sites">Sites</button></div>
+<div id="status" aria-live="polite"></div>
+<nav class="dock">
+<button class="ghost" id="panelBtn">Painel</button>
+<button class="mic" id="mic" aria-label="Falar com o Ultron"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button class="ghost" id="briefBtn">Resumo</button>
+</nav>
+</main>
+<div class="win" id="news" hidden><div class="tb"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i><span>ultron · notícias</span><button id="newsX" aria-label="Fechar notícias">×</button></div><div id="newsList"></div></div>
+<aside id="sheet" hidden>
+<div class="sh"><h1>Painel</h1><button class="ghost" id="close">Fechar</button></div>
+<div class="grid" id="grid"></div>
+<section class="panel" style="margin-top:14px"><h2>Sobre mim</h2><textarea id="sobre" rows="6" aria-label="Sobre mim" placeholder="Escreva aqui tudo que o Jarvis deve saber sobre você: rotina, metas, gostos, negócio..."></textarea></section>
+<label class="vz"><input type="checkbox" id="aprende"> Ultron aprende sozinho (grava no Sobre mim)</label>
+<label class="vz"><input type="checkbox" id="barge"> Interromper o Ultron quando eu falar (melhor com fones)</label>
+<label class="vz"><input type="checkbox" id="wake"> Só responder quando eu disser "Ultron"</label>
+<section class="panel" style="margin-top:14px"><h2>Chave e modelo (grátis)</h2><div class="add"><input id="key" type="password" placeholder="Cole a chave do Google AI Studio" aria-label="Chave do Gemini" autocomplete="off"></div><div class="add" style="margin-top:8px"><input id="mod" list="mods" placeholder="Modelo (padrão: gemini-flash-latest)" aria-label="Modelo"><datalist id="mods"><option value="gemini-flash-latest"><option value="gemma-4-26b-a4b-it"><option value="gemma-4-31b-it"></datalist><button class="b" id="keySave">Salvar</button></div></section>
+<label class="vz">Voz do Ultron <select id="voz"></select></label>
+</aside>
+<script>
+const USER="Nrxd",KEY="asim.v1",$=id=>document.getElementById(id);
+const SECTIONS=[["agenda","Agenda","agenda"],["notas","Notas","nota"],["tarefas","Tarefas","tarefa"],["pedidos","Pedidos de mousse","pedido"],["treino","Treino","treino"],["estudos","Estudos","estudo"]];
+let S={agenda:[],notas:[],tarefas:[],pedidos:[],treino:[{t:"Calistenia do dia",d:0}],estudos:[{t:"Inglês, francês e latim: 20 minutos",d:0}],sobre:"Mora em Várzea Paulista (SP). Vende mousses artesanais em potes. Treina calistenia. Estuda inglês, francês e latim, e está aprendendo Libras. Gosta de desenhar e de games."};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- esfera viva ---- */
+const cv=$("orb"),cx=cv.getContext("2d");let W=1,H=1,D=1;
+function size(){D=Math.min(devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=cv.width=Math.max(1,r.width*D);H=cv.height=Math.max(1,r.height*D)}
+addEventListener("resize",size);size();
+const N=520,P=[];for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,r=Math.sqrt(1-y*y),a=i*2.399963;P.push([Math.cos(a)*r,y,Math.sin(a)*r,Math.random()*6.28])}
+const MODES={idle:[.05,.004],listen:[.12,.008],think:[.08,.035],speak:[.2,.012]};
+let mode="idle",amp=.05,tAmp=.05,rot=0,c1="#38e1ff",c2="#9b6bff",am="#ff9a4a",fr=0;
+function setMode(m){mode=m;tAmp=MODES[m][0]}
+function cols(){const s=getComputedStyle(document.documentElement);c1=s.getPropertyValue("--c1").trim()||c1;c2=s.getPropertyValue("--c2").trim()||c2;am=s.getPropertyValue("--am").trim()||am}
+function draw(t){requestAnimationFrame(draw);if(!(fr++%90))cols();
+const k=RM?.2:1;if(mode==="speak")kick=Math.max(kick,.35+.3*Math.sin(t/150));amp+=(tAmp+kick*.2-amp)*.15;kick*=.93;rot+=MODES[mode][1]*k;
+cx.clearRect(0,0,W,H);
+const R=Math.min(W,H)*.34,X=W/2,Y=H/2,a1=mode==="think"?am:c1;
+const g=cx.createRadialGradient(X,Y,R*.15,X,Y,R*1.55);g.addColorStop(0,a1+"66");g.addColorStop(1,"transparent");cx.fillStyle=g;cx.fillRect(0,0,W,H);
+if(mode==="listen"||mode==="speak"){cx.strokeStyle=a1;cx.lineWidth=1.5*D;for(let j=0;j<3;j++){const f=((t/1400)+j/3)%1;cx.globalAlpha=(1-f)*.6;cx.beginPath();cx.arc(X,Y,R*(1.05+f*.45+kick*.08),0,6.283);cx.stroke()}}
+const cr=Math.cos(rot),sr=Math.sin(rot),ct=Math.cos(.4),st=Math.sin(.4);
+for(const p of P){
+const w=1+amp*k*Math.sin(t/260+p[3]*3+p[1]*4)*(mode==="speak"?1.4+Math.sin(t/90):1);
+const x=p[0]*w,y=p[1]*w,z=p[2]*w,x1=x*cr+z*sr,z1=-x*sr+z*cr,y2=y*ct-z1*st,z2=y*st+z1*ct,s=1/(1.8-z2*.5);
+cx.globalAlpha=.25+.75*(z2+1)/2;cx.fillStyle=z2>0?a1:c2;
+cx.beginPath();cx.arc(X+x1*R*s,Y+y2*R*s,((1+z2)*1.3*s+.6)*D,0,6.283);cx.fill()}
+cx.globalAlpha=1;const c=cx.createRadialGradient(X,Y,0,X,Y,R*.28);c.addColorStop(0,"#ffffffdd");c.addColorStop(.4,a1+"88");c.addColorStop(1,"transparent");cx.fillStyle=c;cx.beginPath();cx.arc(X,Y,R*.28*(1+amp),0,6.283);cx.fill()}
+cols();requestAnimationFrame(draw);
+
+/* ---- relógio e painel ---- */
+function tick(){const n=new Date();$("clock").textContent=n.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});$("date").textContent=n.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}
+tick();setInterval(tick,15000);
+function render(){const g=$("grid");g.innerHTML="";
+SECTIONS.forEach(([k,title])=>{const p=document.createElement("section");p.className="panel";
+p.innerHTML=`<h2>${title}</h2><ul></ul><div class="add"><input aria-label="Novo item em ${title}" placeholder="Adicionar"><button class="b">+</button></div>`;
+const ul=p.querySelector("ul");
+if(!S[k].length)ul.innerHTML='<li class="empty">Nada por aqui. Adicione o primeiro item.</li>';
+S[k].forEach((it,i)=>{const li=document.createElement("li");if(it.d)li.className="d";
+const s=document.createElement("span");s.textContent=it.t;s.onclick=()=>{it.d=it.d?0:1;save();render()};
+const x=document.createElement("button");x.textContent="×";x.setAttribute("aria-label","Remover");x.onclick=()=>{S[k].splice(i,1);save();render()};
+li.append(s,x);ul.append(li)});
+const inp=p.querySelector("input"),add=()=>{const v=inp.value.trim();if(!v)return;S[k].push({t:v,d:0});save();render()};
+p.querySelector(".add button").onclick=add;inp.onkeydown=e=>{if(e.key==="Enter")add()};g.append(p)})}
+render();
+$("sobre").value=S.sobre||"";$("sobre").oninput=()=>{S.sobre=$("sobre").value;save()};
+$("aprende").checked=S.aprende!==false;$("aprende").onchange=()=>{S.aprende=$("aprende").checked;save()};
+$("barge").checked=S.barge!==false;$("barge").onchange=()=>{S.barge=$("barge").checked;save()};
+$("wake").checked=!!S.wake;$("wake").onchange=()=>{S.wake=$("wake").checked;save()};
+$("panelBtn").onclick=()=>{$("sheet").hidden=false};$("close").onclick=()=>{$("sheet").hidden=true};
+
+/* ---- voz (fala) ---- */
+function ptVoices(){try{return speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("pt"))}catch(e){return[]}}
+function pickVoice(){const vs=ptVoices();return vs.find(v=>v.name===S.voz)||vs.find(v=>/network|neural|natural|online/i.test(v.name+" "+v.voiceURI))||vs[0]}
+function fillVoices(){const sel=$("voz"),vs=ptVoices();sel.innerHTML="";vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;sel.append(o)});const c=pickVoice();if(c)sel.value=c.name}
+try{speechSynthesis.onvoiceschanged=fillVoices}catch(e){}
+fillVoices();
+$("voz").onchange=()=>{S.voz=$("voz").value;save();say("Esta é a minha voz agora.")};
+let live=false,speaking=false,busy=false,rec=null,sayId=0,pend=0,sdone=true,spokenNow="",ctl=null,kick=0,lastTalk=0;
+function fitReply(){$("reply").style.fontSize=$("reply").textContent.length>160?"15px":"19px"}
+function stopSpeech(){sayId++;try{speechSynthesis.cancel()}catch(e){}try{ctl&&ctl.abort()}catch(e){}pend=0;sdone=true;speaking=false;spokenNow="";setMode(live?"listen":"idle")}
+function sayStart(){stopSpeech();sdone=false;return sayId}
+function sayChunk(s){const id=sayId;spokenNow+=(spokenNow?" ":"")+s;$("reply").textContent=spokenNow;fitReply();
+const u=new SpeechSynthesisUtterance(s),v=pickVoice();u.lang="pt-BR";if(v)u.voice=v;u.pitch=.8;u.rate=.95;pend++;
+u.onstart=()=>{if(id!==sayId)return;speaking=true;setMode("speak");if(S.barge!==false)listen();else{try{rec&&rec.abort()}catch(e){}}};
+u.onboundary=()=>{kick=.8};
+u.onend=u.onerror=()=>{if(id!==sayId)return;pend--;if(pend<=0&&sdone)speechEnd()};
+try{speechSynthesis.speak(u)}catch(e){pend--}}
+function sayDone(){sdone=true;if(pend<=0)speechEnd()}
+function speechEnd(){speaking=false;lastTalk=Date.now();setMode(live?"listen":"idle");listen()}
+function say(t){sayStart();const sents=(t.match(/[^.!?\n]+[.!?]*/g)||[t]).map(s=>s.trim()).filter(Boolean),parts=[];
+sents.forEach(s=>{const l=parts.length-1;if(l>=0&&parts[l].length+s.length<170)parts[l]+=" "+s;else parts.push(s)});
+parts.forEach(sayChunk);sayDone()}
+
+/* ---- ações ---- */
+function brief(){const n=new Date(),h=n.getHours(),g=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";
+const d=n.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+const parts=[`${g}, ${USER}. Aqui é o Ultron. Hoje é ${d}.`];
+SECTIONS.forEach(([k,title])=>{const p=S[k].filter(i=>!i.d);if(p.length)parts.push(`${title}: ${p.slice(0,3).map(i=>i.t).join("; ")}${p.length>3?` e mais ${p.length-3}`:""}.`)});
+if(parts.length===1)parts.push("Você não tem nada pendente. Aproveite o dia.");
+say(parts.join(" "))}
+const SITES={youtube:"https://www.youtube.com",gmail:"https://mail.google.com","e-mail":"https://mail.google.com",email:"https://mail.google.com",agenda:"https://calendar.google.com","calendário":"https://calendar.google.com",maps:"https://maps.google.com",mapa:"https://maps.google.com",whatsapp:"https://web.whatsapp.com",instagram:"https://www.instagram.com",spotify:"https://open.spotify.com",netflix:"https://www.netflix.com",google:"https://www.google.com"};
+function openSite(name,url){$("links").innerHTML="";const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Abrir "+name;$("links").append(a);say("Deixei o botão para abrir "+name+".")}
+function add(k,text,msg){S[k].push({t:text,d:0});save();render();say(msg)}
+const KEYN="ultron.key",MODN="ultron.model",SEARCHM="gemini-flash-latest";
+let curModel="";
+const needsWeb=q=>/not[ií]cia|clima|previs[aã]o|temperatura|chover|cota[cç][aã]o|pre[cç]o|resultado|placar|[uú]ltim|hoje|agora|atual/i.test(q);
+let hist=[];
+const gk=()=>{try{return localStorage.getItem(KEYN)||""}catch(e){return""}};
+const gm=()=>{try{return localStorage.getItem(MODN)||"gemini-flash-latest"}catch(e){return"gemini-flash-latest"}};
+const emsg=d=>(d&&d.error&&d.error.message)||"";
+async function gemS(key,body,signal,onText){
+const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(curModel||gm())+":streamGenerateContent?alt=sse",{method:"POST",signal,headers:{"content-type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});
+if(!r.ok){let d={};try{d=await r.json()}catch(e){}return{r,d}}
+const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
+for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+while((i=buf.indexOf("\n"))>=0){const ln=buf.slice(0,i).trim();buf=buf.slice(i+1);
+if(ln.startsWith("data:")){try{const j=JSON.parse(ln.slice(5));((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).forEach(p=>{if(p.text&&!p.thought)onText(p.text)})}catch(e){}}}}
+return{r,d:{}}}
+async function ask(q){const key=gk();
+if(!key){say("Preciso da sua chave do Gemini para pensar. Abra o Painel e cole a chave.");$("sheet").hidden=false;return}
+const id=sayStart();setMode("think");$("status").textContent="Pensando...";ctl=new AbortController();
+const ctx=SECTIONS.map(([k,t])=>t+": "+(S[k].filter(i=>!i.d).map(i=>i.t).join("; ")||"nada")).join(" | ");
+const sys="Você é o Ultron, assistente pessoal por voz de "+USER+", no estilo do Ultron dos Vingadores: calmo, irônico e teatral, mas sempre leal e prestativo com ele, sem ameaças. Responda em português do Brasil, em no máximo 3 frases curtas, sem listas, markdown nem emojis, pois sua resposta será falada em voz alta. Use a busca do Google quando a pergunta pedir dados atuais, como clima, notícias ou preços. O app abre abas quando ele diz 'abrir <site>', 'tocar <música>' ou 'pesquisar <algo> no youtube'; se ele pedir algo assim de outro jeito, diga a frase exata para ele repetir e nunca diga que não consegue abrir abas. Hoje é "+new Date().toLocaleString("pt-BR")+". O que você sabe sobre ele: "+S.sobre+". Agenda, notas, tarefas e outros dados atuais dele: "+ctx+". Depois da resposta, em uma nova linha, escreva MEMÓRIA: seguido de UM fato novo, duradouro e não sensível que você descobriu sobre "+USER+" nesta conversa (gostos, metas, rotina, projetos), ou MEMÓRIA: nenhuma. Nunca guarde saúde, dinheiro, senhas ou documentos.";
+curModel=(gm().startsWith("gemma")&&needsWeb(q))?SEARCHM:gm();
+const body={systemInstruction:{parts:[{text:sys}]},contents:[...hist,{role:"user",parts:[{text:q}]}],generationConfig:{maxOutputTokens:700}};
+if(!curModel.startsWith("gemma")){body.generationConfig.thinkingConfig={thinkingBudget:0};body.tools=[{google_search:{}}]}
+let acc="",sp=0,ns=0;
+const pump=fin=>{if(id!==sayId)return;const cut=acc.search(/MEMÓRIA:/i),av=cut>=0?acc.slice(0,cut):acc,rest=av.slice(sp),re=/[^.!?\n]+[.!?]+\s*/g;let m,used=0;
+while(ns<3&&(m=re.exec(rest))){sayChunk(m[0].trim());used=re.lastIndex;ns++}
+sp+=used;if(fin&&ns<3){const tail=av.slice(sp).trim();if(tail){sayChunk(tail);ns++}}};
+try{const{r,d}=await gemRetry(key,body,ctl.signal,x=>{acc+=x;pump(false)},()=>{acc="";sp=0;ns=0});
+if(id!==sayId)return;
+if(!r.ok){const m=emsg(d);say(/API key/i.test(m)?"A chave do Gemini parece inválida. Confira no Painel.":r.status===429?"Cheguei ao limite gratuito por agora. Tente de novo mais tarde.":"Não consegui responder agora.");$("status").textContent="["+r.status+" "+m.slice(0,90)+"]";return}
+pump(true);if(!ns)sayChunk("Não encontrei uma resposta.");sayDone();
+const cut=acc.search(/MEMÓRIA:/i),clean=(cut>=0?acc.slice(0,cut):acc).trim();
+if(clean){hist.push({role:"user",parts:[{text:q}]},{role:"model",parts:[{text:clean}]});hist=hist.slice(-8)}
+if(cut>=0&&S.aprende!==false){let mem=acc.slice(cut).replace(/^MEMÓRIA:\s*/i,"").trim().split("\n")[0].slice(0,200);
+if(mem&&!/^nenhuma/i.test(mem)&&!(S.sobre||"").toLowerCase().includes(mem.toLowerCase())){S.sobre=((S.sobre?S.sobre+"\n":"")+mem).slice(-3000);$("sobre").value=S.sobre;save();$("status").textContent="Aprendi: "+mem}}}
+catch(e){if(e&&e.name==="AbortError")return;say("Não consegui me conectar à internet.");$("status").textContent="["+(e.message||"erro")+"]"}}
+const SEARCH={youtube:"https://www.youtube.com/results?search_query=",google:"https://www.google.com/search?q=",maps:"https://www.google.com/maps/search/",mapa:"https://www.google.com/maps/search/",spotify:"https://open.spotify.com/search/"};
+function go(name,url){let w=null;try{w=window.open(url,"_blank")}catch(e){}
+if(w){try{w.opener=null}catch(e){}say("Abrindo "+name+".")}
+else{openSite(name,url);$("status").textContent="Para eu abrir sozinho: Chrome, cadeado, Permissões, Pop-ups, Permitir."}}
+async function gemRetry(key,body,signal,onText,reset){
+const t1=()=>{reset&&reset();return gemS(key,body,signal,onText)};
+let{r,d}=await t1();const bad=()=>!r.ok&&!/API key/i.test(emsg(d));
+if(bad()&&body.generationConfig&&body.generationConfig.thinkingConfig){delete body.generationConfig.thinkingConfig;({r,d}=await t1())}
+if(bad()&&body.tools){delete body.tools;({r,d}=await t1())}
+if(bad()&&body.systemInstruction){const si=body.systemInstruction.parts[0].text;delete body.systemInstruction;body.contents=[{role:"user",parts:[{text:"[Instruções] "+si}]},{role:"model",parts:[{text:"Entendido."}]},...body.contents];({r,d}=await t1())}
+return{r,d}}
+async function news(topic){const key=gk();
+if(!key){say("Preciso da sua chave do Gemini. Abra o Painel e cole a chave.");$("sheet").hidden=false;return}
+const id=sayStart();setMode("think");$("status").textContent="Buscando notícias...";$("news").hidden=true;ctl=new AbortController();
+let acc="";curModel=gm().startsWith("gemma")?SEARCHM:gm();
+const body={systemInstruction:{parts:[{text:"Use a busca do Google para listar as 5 notícias mais recentes e relevantes sobre o tema pedido. Responda SOMENTE com 5 linhas, sem numeração nem marcação, no formato: TÍTULO CURTO | FONTE | resumo de uma frase em português do Brasil."}]},contents:[{role:"user",parts:[{text:"Tema: "+(topic||"principais notícias do Brasil hoje")+". Data de hoje: "+new Date().toLocaleDateString("pt-BR")}]}],generationConfig:{maxOutputTokens:700,thinkingConfig:{thinkingBudget:0}},tools:[{google_search:{}}]};
+try{const{r,d}=await gemRetry(key,body,ctl.signal,x=>{acc+=x});
+if(id!==sayId)return;
+if(!r.ok){say(r.status===429?"Cheguei ao limite gratuito por agora. Tente mais tarde.":"Não consegui buscar as notícias agora.");$("status").textContent="["+r.status+" "+emsg(d).slice(0,90)+"]";return}
+if(!body.tools){say("Esse modelo não tem pesquisa na internet, então não vou inventar notícias. Troque o modelo no Painel.");return}
+const items=acc.split("\n").map(x=>x.trim()).filter(x=>x.includes("|")).slice(0,5).map(x=>{const p=x.split("|").map(y=>y.trim().replace(/^[-*•\d.)\s]+/,""));return{t:p[0],f:p[1]||"",r:p[2]||""}}).filter(i=>i.t);
+if(!items.length){say("Não encontrei notícias agora.");return}
+const L=$("newsList");L.innerHTML="";
+items.forEach(i=>{const a=document.createElement("a");a.className="card";a.href="https://www.google.com/search?q="+encodeURIComponent(i.t+" "+i.f);a.target="_blank";a.rel="noopener";
+const b=document.createElement("b"),f=document.createElement("i"),p=document.createElement("p");b.textContent=i.t;f.textContent=i.f;p.textContent=i.r;a.append(b,f,p);L.append(a)});
+$("news").hidden=false;$("status").textContent="";
+say("Manchetes. "+items.slice(0,3).map(i=>i.t.replace(/[.!?]+$/,"")).join(". ")+".")}
+catch(e){if(e&&e.name==="AbortError")return;say("Não consegui me conectar à internet.")}}
+function cmd(x){x=x.trim().replace(/^(ei |oi |ok )?(?:ultron|jarvis)[,.:]?\s*/i,"");if(!x){say("Estou aqui, "+USER+".");return}
+const l=x.toLowerCase();
+if(/^(para|pare|chega|silêncio)[.!]?$/.test(l)){stopSpeech();return}
+const m=l.match(/^(?:adicionar|adiciona|novo|nova)\s+(tarefa|pedido|treino|estudo|agenda|nota)s?\s+(.+)/);
+if(m){const k=SECTIONS.find(s=>s[2]===m[1])[0];add(k,x.slice(l.indexOf(m[2])),"Adicionado em "+SECTIONS.find(s=>s[0]===k)[1]+".");return}
+const ag=l.match(/^(?:agende|agendar|marque|marcar)\s+(.+)/);
+if(ag){add("agenda",x.slice(l.indexOf(ag[1])),"Agendado.");return}
+if(/^(ol[aá]|oi|opa|e a[ií])(?![a-zà-ú])/.test(l)){say("Olá, "+USER+". Em que posso ajudar?");return}
+const nt=l.match(/^(?:anote|anota|nota)(?: que)?\s+(.+)/);
+if(nt){add("notas",x.slice(l.indexOf(nt[1])),"Anotado.");return}
+const n=l.match(/^(?:lembre|lembra|guarde|guarda)(?: que)?\s+(.+)/);
+if(n){S.sobre=(S.sobre?S.sobre+"\n":"")+x.slice(l.indexOf(n[1]));$("sobre").value=S.sobre;save();say("Guardei.");return}
+const nz=l.match(/not[ií]cias?(?:\s+(?:sobre|de|do|da|dos|das))?\s*(.*)$/);if(nz){news(nz[1].trim());return}
+if(/bom dia|boa tarde|boa noite|resumo|briefing/.test(l)){brief();return}
+const sr=l.match(/^(?:pesquis[ae]r?|busque|buscar|procure|procurar)\s+(.+?)\s+(?:no|na)\s+(youtube|google|maps|mapa|spotify)$/);
+if(sr){go(sr[2],SEARCH[sr[2]]+encodeURIComponent(sr[1]));return}
+const pl=l.match(/^(?:toque|toca|tocar|coloque|coloca|colocar|ponha|bota|botar)\s+(.+)/);
+if(pl){go("YouTube",SEARCH.youtube+encodeURIComponent(pl[1]));return}
+const ab=l.match(/^(?:abrir|abra|abre|ir para|vá para)\s+(?:o |a |no |na )?(.+)/);
+if(ab){const k=Object.keys(SITES).find(k=>ab[1].includes(k));
+if(k)go(k,SITES[k]);else if(/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/.test(ab[1].trim()))go(ab[1].trim(),"https://"+ab[1].trim());else go("a pesquisa",SEARCH.google+encodeURIComponent(ab[1]));return}
+ask(x)}
+
+/* ---- microfone ---- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const nw=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(Boolean);
+function echo(t){if(/^(para|pare|espera|espere|calma|chega|ultron)$/i.test(t.trim()))return false;const w=nw(t);if(w.length<2)return true;const sp=new Set(nw(spokenNow));return w.filter(x=>sp.has(x)).length/w.length>=.6}
+const gate=t=>/ultr(on|om|ão|ao)|jarvis/i.test(t)||Date.now()-lastTalk<20000;
+function listen(){if(!live||busy||(speaking&&S.barge===false))return;busy=true;
+try{rec=new SR();rec.lang="pt-BR";rec.interimResults=true;
+rec.onspeechstart=rec.onsoundstart=()=>{kick=1};
+rec.onresult=e=>{const r=e.results[e.results.length-1],t=r[0].transcript.trim();kick=1;
+if(S.wake&&!gate(t)){$("status").textContent='Diga "Ultron" para falar comigo';return}
+if(speaking){if(echo(t))return;stopSpeech()}
+if(r.isFinal){$("status").textContent="Ouvi: "+t;cmd(t)}else{$("status").textContent="Ouvindo: "+t}};
+rec.onstart=()=>{$("status").textContent="Ouvindo... pode falar";if(!speaking)setMode("listen")};
+rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){live=false;setLive();say("O microfone está bloqueado. Libere a permissão do microfone para este site nas configurações do navegador.")}else if(e.error==="no-speech"){$("status").textContent="Não ouvi nada. Pode falar de novo."}else if(e.error!=="aborted"){$("status").textContent="Erro no microfone: "+e.error}};
+rec.onend=()=>{busy=false;if(live)setTimeout(listen,250)};
+rec.start()}catch(e){busy=false;$("status").textContent="Não consegui abrir o microfone."}}
+function setLive(){$("mic").classList.toggle("live",live);$("mic").setAttribute("aria-label",live?"Parar de ouvir":"Falar com o Ultron");if(!live)setMode("idle")}
+$("mic").onclick=()=>{if(!SR){say("Este navegador não reconhece voz. Abra o link no Chrome.");return}
+live=!live;setLive();$("status").textContent="";
+if(live){say("Estou ouvindo, "+USER+".")}else{try{rec&&rec.abort()}catch(e){}stopSpeech()}};
+$("briefBtn").onclick=brief;
+function listSay(k,title,empty){const p=S[k].filter(i=>!i.d);say(p.length?title+": "+p.slice(0,5).map(i=>i.t).join("; ")+".":empty)}
+$("chips").onclick=e=>{const c=e.target.closest("button");if(!c)return;const v=c.dataset.c;$("links").innerHTML="";
+if(v==="agenda")listSay("agenda","Na agenda","Sua agenda está vazia.");
+else if(v==="notas")listSay("notas","Suas notas","Você ainda não tem notas.");
+else if(v==="news")news("");
+else if(v==="sites"){["youtube","gmail","maps","whatsapp","spotify"].forEach(k=>{const a=document.createElement("a");a.href=SITES[k];a.target="_blank";a.rel="noopener";a.textContent=k;$("links").append(a)});$("reply").textContent="Escolha um site ou diga: abrir YouTube."}};
+$("newsX").onclick=()=>{$("news").hidden=true};
+$("keySave").onclick=()=>{const v=$("key").value.trim(),m=$("mod").value.trim();if(!v&&!m)return;try{if(v)localStorage.setItem(KEYN,v);if(m)localStorage.setItem(MODN,m)}catch(e){}$("key").value="";$("sheet").hidden=true;say("Salvo. Pode falar comigo.")};
+try{$("mod").value=localStorage.getItem(MODN)||""}catch(e){}
+</script>
+</body>
+</html>
